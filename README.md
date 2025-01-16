@@ -28,4 +28,5 @@ terraform destroy
 ## Documentation
 
 * Terraform doc - https://developer.hashicorp.com/terraform/docs
-* Terraform for AWS - https://registry.terraform.io/providers/hashicorp/aws/latest/docs 
+* Terraform for AWS - https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+* Terraform Modules - https://registry.terraform.io/browse/modules
