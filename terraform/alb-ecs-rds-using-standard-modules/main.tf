@@ -11,12 +11,16 @@ data "aws_availability_zones" "available" {}
 
 locals {
   name    = "tctalent-me"
+  description = "Talent Catalog M&E"
   region  = var.aws_region
 
+  # This forms the base of our network addresses: the first 16 bits (the 10.0) will be unchanged.
   vpc_cidr = "10.0.0.0/16"
-  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
-  container_name = "tctalent-me-container"
+  #This selects three of the AWS existing availability zones
+  azs = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  container_name = "${local.name}-container"
 
   container_port = var.app_port
 
@@ -78,8 +82,7 @@ module "ecs_service" {
       memory    = 1024
       essential = true
 
-      # todo Can I compute this from local container name - see https://developer.hashicorp.com/terraform/language/values/locals
-      image     = aws_ecr_repository.tctalent-me.repository_url
+      image     = aws_ecr_repository.repo.repository_url
       port_mappings = [
         {
           name          = local.container_name
@@ -93,7 +96,11 @@ module "ecs_service" {
         {
           name  = "DATABASE_HOST"
           value = module.db.db_instance_address
-        }
+        },
+        {
+          name  = "REDIST_HOST"
+          value = module.elasticache.replication_group_primary_endpoint_address
+        },
       ]
 
       # Example image used requires access to write to root filesystem
@@ -103,7 +110,7 @@ module "ecs_service" {
       log_configuration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "/fargate/service/tctalent-me-fargate-log"
+          awslogs-group         = "/fargate/service/${local.name}-fargate-log"
           awslogs-stream-prefix = "ecs"
           awslogs-region        = "us-east-1"
         }
@@ -209,9 +216,9 @@ module "db" {
   performance_insights_retention_period = 7
   create_monitoring_role                = true
   monitoring_interval                   = 60
-  monitoring_role_name                  = "tctalent-me-monitoring-role"
+  monitoring_role_name                  = "${local.name}-monitoring-role"
   monitoring_role_use_name_prefix       = true
-  monitoring_role_description           = "Monitoring Talent Catalog M&E"
+  monitoring_role_description           = "Monitoring ${local.description}"
 
   parameters = [
     {
@@ -239,6 +246,56 @@ module "db" {
   }
 }
 
+
+################################################################################
+# ElastiCache Module
+################################################################################
+
+module "elasticache" {
+  source = "terraform-aws-modules/elasticache/aws"
+
+  cluster_id               = local.name
+  create_cluster           = true
+  create_replication_group = false
+
+  engine_version = "7.1"
+  node_type      = "cache.t2.micro"
+
+  maintenance_window = "sun:05:00-sun:09:00"
+  apply_immediately  = true
+
+  # Security Group
+  vpc_id = module.vpc.vpc_id
+  security_group_rules = {
+    ingress_vpc = {
+      # Default type is `ingress`
+      # Default port is based on the default engine port
+      description = "VPC traffic"
+      cidr_ipv4   = module.vpc.vpc_cidr_block
+    }
+  }
+
+  # Subnet Group
+  subnet_group_name        = local.name
+  subnet_group_description = "${local.name} subnet group"
+  subnet_ids               = module.vpc.private_subnets
+
+  # Parameter Group
+  create_parameter_group      = true
+  parameter_group_name        = local.name
+  parameter_group_family      = "redis7"
+  parameter_group_description = "${local.name} parameter group"
+  parameters = [
+    {
+      name  = "latency-tracking"
+      value = "yes"
+    }
+  ]
+
+  tags = local.tags
+}
+
+
 ################################################################################
 # Supporting Resources
 ################################################################################
@@ -251,6 +308,11 @@ module "vpc" {
   cidr = local.vpc_cidr
 
   azs              = local.azs
+
+  # We have three types of subnet: public, private and database.
+  # Here is a nice image illustrating those zones: https://miro.medium.com/v2/1*rH2xDaYPE_VOAT8vBKVTug.png
+  # We need one of each of those types of subnet in each of the three availability zones
+  # cidrsubnet is a standard function which calculates subnets: https://developer.hashicorp.com/terraform/language/functions/cidrsubnet
   public_subnets   = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k)]
   private_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 3)]
   database_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 6)]
@@ -287,6 +349,15 @@ module "security_group" {
 
 data "aws_ssm_parameter" "fluentbit" {
   name = "/aws/service/aws-for-fluent-bit/stable"
+}
+
+resource "aws_ecr_repository" "repo" {
+  name                 = local.name
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 resource "aws_service_discovery_http_namespace" "this" {
