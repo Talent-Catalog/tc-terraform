@@ -1,5 +1,10 @@
 # variables.tf
 
+variable "project_name" {
+  description = "Name of project - all resources will be named based on this"
+  default = "tctalent-me2"
+}
+
 variable "aws_region" {
   description = "The AWS region things are created in"
   default     = "us-east-1"

@@ -10,7 +10,7 @@ data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {}
 
 locals {
-  name    = "tctalent-me"
+  name    = var.project_name
   description = "Talent Catalog M&E"
   region  = var.aws_region
 
@@ -63,7 +63,7 @@ module "ecs_cluster" {
 
 module "ecs_service" {
   source = "terraform-aws-modules/ecs/aws//modules/service"
-  depends_on = [module.db]
+  depends_on = [module.db,module.elasticache]
 
   name        = local.name
   cluster_arn = module.ecs_cluster.arn
@@ -99,7 +99,7 @@ module "ecs_service" {
         },
         {
           name  = "REDIST_HOST"
-          value = module.elasticache.replication_group_primary_endpoint_address
+          value = module.elasticache.cluster_configuration_endpoint
         },
       ]
 
