@@ -3,7 +3,7 @@ Terraform configuration for Talent Catalog related infrastructure
 
 ## Building the AWS Infrastructure
 
-Initialize Terraform by going to the terraform directory and typing:
+Initialize Terraform by going to a directory containing the terraform configuration and typing:
 
 ```
 terraform init

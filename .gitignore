@@ -2,6 +2,7 @@
 *.tfstate
 *.tfstate.backup
 .terraform.tfstate.lock.info
+tfplan
 
 # Module directory
 /terraform/alb-ecs-rds-using-standard-modules/.terraform
