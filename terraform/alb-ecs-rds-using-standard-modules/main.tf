@@ -1,6 +1,15 @@
 # Use standard Terraform AWS modules where possible.
 # See https://registry.terraform.io/browse/modules?provider=aws
 
+# todo Store state on s3 so shared by everyone
+# terraform {
+#   backend "s3" {
+#     bucket         = "my-terraform-state"
+#     key            = "state/terraform.tfstate"
+#     region         = "us-east-1"
+#     encrypt        = true
+#   }
+# }
 
 provider "aws" {
   region = local.region
@@ -99,7 +108,7 @@ module "ecs_service" {
         },
         {
           name  = "REDIST_HOST"
-          value = module.elasticache.cluster_configuration_endpoint
+          value = module.elasticache.replication_group_primary_endpoint_address
         },
       ]
 
@@ -254,12 +263,13 @@ module "db" {
 module "elasticache" {
   source = "terraform-aws-modules/elasticache/aws"
 
-  cluster_id               = local.name
-  create_cluster           = true
-  create_replication_group = false
+  replication_group_id = local.name
 
   engine_version = "7.1"
   node_type      = "cache.t2.micro"
+
+  # Add some replicas matching the number of azs we have (-1)
+  replicas_per_node_group = 2
 
   maintenance_window = "sun:05:00-sun:09:00"
   apply_immediately  = true
@@ -279,18 +289,6 @@ module "elasticache" {
   subnet_group_name        = local.name
   subnet_group_description = "${local.name} subnet group"
   subnet_ids               = module.vpc.private_subnets
-
-  # Parameter Group
-  create_parameter_group      = true
-  parameter_group_name        = local.name
-  parameter_group_family      = "redis7"
-  parameter_group_description = "${local.name} parameter group"
-  parameters = [
-    {
-      name  = "latency-tracking"
-      value = "yes"
-    }
-  ]
 
   tags = local.tags
 }
