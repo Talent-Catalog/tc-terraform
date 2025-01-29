@@ -2,7 +2,10 @@
 
 variable "project_name" {
   description = "Name of project - all resources will be named based on this"
-  default = "tctalent-me2"
+}
+
+variable "project_description" {
+  description = "Description of project"
 }
 
 variable "aws_region" {
@@ -10,23 +13,26 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "ecs_task_execution_role_name" {
-  description = "ECS task execution role name"
-  default = "myEcsTaskExecutionRole"
-}
-
 variable "app_port" {
   description = "Port exposed by the docker image to redirect traffic to"
   default     = 8088
 }
 
-variable "app_count" {
-  description = "Number of docker containers to run"
-  default     = 3
-}
-
 variable "health_check_path" {
   default = "/"
+}
+
+variable "db_name" {
+  description = "Name of the database"
+}
+
+variable "db_user_name" {
+  description = "Data base user name"
+}
+
+variable "db_instance_class" {
+  description = "Instance class of database - see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.Summary.html"
+  default = "db.t3.micro"
 }
 
 variable "fargate_cpu" {
