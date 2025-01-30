@@ -1,9 +1,7 @@
 # Compiled files
-*.tfstate
-*.tfstate.backup
-.terraform.tfstate.lock.info
-tfplan
+**/.terraform
+**/.terraform.lock.hcl
+**/tfplan
+**/terraform.tfstate
+**/terraform.tfstate.backup
 
-# Module directory
-/terraform/alb-ecs-rds-using-standard-modules/.terraform
-/terraform/alb-ecs-rds-using-standard-modules/.terraform.lock.hcl

@@ -11,16 +11,17 @@
 #   }
 # }
 
+# todo Use secrets manager
+
 provider "aws" {
   region = local.region
 }
 
-data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {}
 
 locals {
   name    = var.project_name
-  description = "Talent Catalog M&E"
+  description = var.project_description
   region  = var.aws_region
 
   # This forms the base of our network addresses: the first 16 bits (the 10.0) will be unchanged.
@@ -35,7 +36,7 @@ locals {
 
   tags = {
     Name       = local.name
-    Repository = "https://github.com/Talent-Catalog/terraform-ecs-fargate"
+    Repository = "https://github.com/Talent-Catalog/terraform"
   }
 }
 
@@ -87,8 +88,8 @@ module "ecs_service" {
   container_definitions = {
 
     (local.container_name) = {
-      cpu       = 512
-      memory    = 1024
+      cpu       = var.fargate_cpu
+      memory    = var.fargate_memory
       essential = true
 
       image     = aws_ecr_repository.repo.repository_url
@@ -121,7 +122,7 @@ module "ecs_service" {
         options = {
           awslogs-group         = "/fargate/service/${local.name}-fargate-log"
           awslogs-stream-prefix = "ecs"
-          awslogs-region        = "us-east-1"
+          awslogs-region        = local.region
         }
       }
 
@@ -199,13 +200,12 @@ module "db" {
   engine_lifecycle_support = "open-source-rds-extended-support-disabled"
   family                   = "postgres14" # DB parameter group
   major_engine_version     = "14"         # DB option group
-  instance_class           = "db.t3.micro"
+  instance_class           = var.db_instance_class
 
   allocated_storage     = 20
 
-  db_name  = "supersetdb"
-  username = "tctalent"
-  password = "tctalent"
+  db_name  = var.db_name
+  username = var.db_user_name
   port     = 5432
 
   multi_az               = true
@@ -343,10 +343,6 @@ module "security_group" {
   ]
 
   tags = local.tags
-}
-
-data "aws_ssm_parameter" "fluentbit" {
-  name = "/aws/service/aws-for-fluent-bit/stable"
 }
 
 resource "aws_ecr_repository" "repo" {
