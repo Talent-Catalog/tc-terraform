@@ -11,11 +11,12 @@
 #   }
 # }
 
+# todo Use secrets manager
+
 provider "aws" {
   region = local.region
 }
 
-data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {}
 
 locals {
@@ -342,10 +343,6 @@ module "security_group" {
   ]
 
   tags = local.tags
-}
-
-data "aws_ssm_parameter" "fluentbit" {
-  name = "/aws/service/aws-for-fluent-bit/stable"
 }
 
 resource "aws_ecr_repository" "repo" {
