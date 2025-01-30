@@ -26,7 +26,19 @@ terraform destroy
 ```
 
 ## Documentation
+Standard parameterizable terraform for AWS load balancer, service with multiple Fargate 
+instances, database and REDIS caching.
 
+The core module is located in `alb-ecs-rds-using-standard-modules`.
+       
+Two simple examples are provided in the `examples` subdirectory.
+
+Go to each example subdirectory and run the standard terraform commands.
+                                                                           
+Note that if you run `terraform apply` you may create resources on AWS that you will be charged 
+for, so be sure to run `terraform destroy` when you are finished in order to remove them.
+
+### External documentation
 * Terraform doc - https://developer.hashicorp.com/terraform/docs
 * Terraform for AWS - https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 * Terraform Modules - https://registry.terraform.io/browse/modules
