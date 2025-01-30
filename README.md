@@ -32,7 +32,7 @@ instances, database and REDIS caching.
 The core module is located in `alb-ecs-rds-using-standard-modules`. It is created using Terraform's
 standard AWS specific modules which are located in the 
 [Terraform registry](https://registry.terraform.io/).
-See also documentation link below.
+See also documentation links below.
        
 Two simple examples are provided in the `examples` subdirectory.
 
