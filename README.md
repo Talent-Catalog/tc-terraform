@@ -27,7 +27,8 @@ terraform destroy
 
 ## Documentation
 Standard parameterizable terraform for AWS load balancer, service with multiple Fargate 
-instances, database and REDIS caching.
+instances, database and AWS Elasticache/REDIS caching.
+Here is a [diagram of that architecture](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*rH2xDaYPE_VOAT8vBKVTug.png)
 
 The core module is located in `alb-ecs-rds-using-standard-modules`. It is created using Terraform's
 standard AWS specific modules which are located in the 
