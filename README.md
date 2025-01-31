@@ -42,6 +42,13 @@ Go to each example subdirectory and run the standard terraform commands.
 Note that if you run `terraform apply` you may create resources on AWS that you will be charged 
 for, so be sure to run `terraform destroy` when you are finished in order to remove them.
 
+Here are 3 short (less than 5 minutes) videos which walk you through Terraform for creating our 
+standard architecture on AWS:  
+* [Terraform video 1](https://drive.google.com/file/d/1JZUenkyr2rtVB7h8eElkRvXfwqbCIPQB/view?usp=drive_link) 
+* [Terraform video 2](https://drive.google.com/file/d/1kEiK77T8_krmqX-TxVodmNAJhDznbocA/view?usp=drive_link) 
+* [Terraform video 3](https://drive.google.com/file/d/1wLvXbuIZViKFnqJZd_R5HMsBVQrqhD_4/view?usp=drive_link)
+
+
 ### External documentation
 * Terraform doc - https://developer.hashicorp.com/terraform/docs
 * Terraform for AWS - https://registry.terraform.io/providers/hashicorp/aws/latest/docs
